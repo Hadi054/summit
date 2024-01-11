@@ -1,11 +1,14 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'dart:convert';
 import 'dart:io';
+import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'writing_screen.dart';
 import 'package:file_picker/file_picker.dart';
+import 'result_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,7 +17,6 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -22,25 +24,11 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => MyHomePage(),
         '/writing': (context) => WritingScreen(),
+        '/result': (context) => ResultScreen()
       },
       initialRoute: '/',
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a blue toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
@@ -51,15 +39,6 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
@@ -69,13 +48,66 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _incrementCounter() {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
       _counter++;
     });
+  }
+
+  void _sendDocument(BuildContext context, {path}) async {
+    showDialog(
+        context: context,
+        builder: (_) {
+          return Dialog(
+            backgroundColor: Color.fromARGB(255, 28, 23, 43),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(children: [
+                CircularProgressIndicator(),
+                SizedBox(
+                  width: 15,
+                ),
+                Text(
+                  "Loading...",
+                  style: TextStyle(color: Colors.white),
+                ),
+              ]),
+            ),
+          );
+        });
+    try {
+      var headersList = {
+        'Accept': '/',
+        'User-Agent': 'Thunder Client (https://www.thunderclient.com)'
+      };
+      var url = Uri.parse('https://summit-backend.azurewebsites.net/upload');
+
+      Map<String, String> body = {};
+
+      var req = http.MultipartRequest('POST', url);
+      req.headers.addAll(headersList);
+      req.files.add(await http.MultipartFile.fromPath('file', path));
+      // Map<String, String> stringFields =
+      //     body.map((key, value) => MapEntry(key, value.toString()));
+
+      // req.fields.addAll(stringFields);
+      // req.fields.addAll(body);
+
+      var res = await req.send();
+      print('res');
+
+      print(res);
+
+      final resBody = await res.stream.bytesToString();
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        print(resBody);
+        final data = json.decode(resBody);
+        Navigator.pushNamed(context, '/result', arguments: data['summary']);
+      } else {
+        print(res.reasonPhrase);
+      }
+    } catch (error) {
+      // An error occurred
+      print('Error: $error');
+    }
   }
 
   @override
@@ -85,24 +117,9 @@ class _MyHomePageState extends State<MyHomePage> {
       backgroundColor: Color.fromARGB(255, 28, 23, 43),
       body: SafeArea(
         child: Center(
-          // Center is a layout widget. It takes a single child and positions it
-          // in the middle of the parent.
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 36, vertical: 20),
             child: Column(
-              // Column is also a layout widget. It takes a list of children and
-              // arranges them vertically. By default, it sizes itself to fit its
-              // children horizontally, and tries to be as tall as is parent.
-              //
-              // Column has various properties to control how it sizes itself and
-              // how it positions its children. Here we use mainAxisAlignment to
-              // center the children vertically; the main axis here is the vertical
-              // axis because Columns are vertical (the cross axis would be
-              // horizontal).
-              //
-              // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-              // action in the IDE, or press "p" in the console), to see the
-              // wireframe for each widget.
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: <Widget>[
                 Container(
@@ -175,11 +192,14 @@ class _MyHomePageState extends State<MyHomePage> {
                     FilePickerResult? result =
                         await FilePicker.platform.pickFiles(
                       type: FileType.custom,
-                      allowedExtensions: ['pdf', 'docx'],
+                      allowedExtensions: ['pdf', 'docx', 'txt'],
                     );
 
                     if (result != null) {
+                      print(result);
                       File file = File(result.files.single.path!);
+                      print(file);
+                      _sendDocument(context, path: file.path);
                     }
                   },
                   child: Container(

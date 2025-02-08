@@ -1,16 +1,12 @@
-# summit
+Summit - AI-Powered Text Summarization App
+Summit is a text summarization app designed to generate concise summaries from text, PDFs, and Word documents. Built with Flutter (Dart) for the frontend and Node.js for the backend, it leverages the Hugging Face Text Summarization API to provide high-quality AI-powered summaries.
 
-A new Flutter project.
+Features:
+✅ Summarize text, PDFs, and DOC files
+✅ User-friendly Flutter-based UI
+✅ Fast and scalable Node.js backend
+✅ AI-driven summaries using Hugging Face API
+✅ Cross-platform support
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Screenshots:
+![summit](https://github.com/user-attachments/assets/bbf7f221-d63d-43fd-b1d3-c0634543f374)

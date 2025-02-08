@@ -54,6 +54,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _sendDocument(BuildContext context, {path}) async {
     showDialog(
+        barrierDismissible: false,
         context: context,
         builder: (_) {
           return Dialog(
@@ -100,7 +101,10 @@ class _MyHomePageState extends State<MyHomePage> {
       if (res.statusCode >= 200 && res.statusCode < 300) {
         print(resBody);
         final data = json.decode(resBody);
-        Navigator.pushNamed(context, '/result', arguments: data['summary']);
+        if (mounted) {
+          Navigator.pop(context);
+          Navigator.pushNamed(context, '/result', arguments: data['summary']);
+        }
       } else {
         print(res.reasonPhrase);
       }

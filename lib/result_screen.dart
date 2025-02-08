@@ -1,6 +1,8 @@
 import 'dart:ffi';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 String loremIpsumText = '''
     What is Lorem Ipsum? Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
@@ -55,7 +57,20 @@ class ResultScreen extends StatelessWidget {
           title: Text('Summary'),
           backgroundColor: Color.fromARGB(255, 28, 23, 43),
           foregroundColor: Colors.white,
-          actions: []),
+          actions: [
+            IconButton(
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: summary));
+                  Fluttertoast.showToast(
+                      msg: "Copied to clipboard",
+                      toastLength: Toast.LENGTH_SHORT,
+                      timeInSecForIosWeb: 1,
+                      backgroundColor: Colors.black45,
+                      textColor: Colors.white,
+                      fontSize: 16.0);
+                },
+                icon: Icon(Icons.copy))
+          ]),
       body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: ListView(
